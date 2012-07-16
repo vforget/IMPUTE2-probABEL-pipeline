@@ -34,7 +34,7 @@ do
     SAMPFILE="${GENDIR}/${PREFIX}.${SAMP_SUFFIX}"
     ${BINDIR}/01_impute2databel.bash ${GENOFILE} ${SAMPFILE} ${PREFIX}
     # SGE
-    # echo "echo \"${BINDIR}/01_impute2databel.bash ${GENOFILE} ${SAMPFILE} ${PREFIX}\" | qsub -V -cwd -o sge_job_log -e sge_job_log -N ${PREFIX}_databel"
+    # echo "${BINDIR}/01_impute2databel.bash ${GENOFILE} ${SAMPFILE} ${PREFIX}" | qsub -V -cwd -o sge_job_log -e sge_job_log -N ${PREFIX}_databel
 done
 wait
 
@@ -47,7 +47,7 @@ do
     ${BINDIR}/02_mlinfo.bash ${GENOFILE} ${PREFIX}
     ${BINDIR}/03_probabel.bash ${PREFIX} ${CHROM} ${INVSIGMA} ${PHENO} ${BINDIR}
     # SGE
-    # echo "echo \"${BINDIR}/03_probabel.bash ${PREFIX} ${CHROM} ${INVSIGMA} ${PHENO} ${BINDIR}\" | qsub -V -cwd -o sge_job_log -e sge_job_log -N ${PREFIX}_probabel"
+    # echo "${BINDIR}/03_probabel.bash ${PREFIX} ${CHROM} ${INVSIGMA} ${PHENO} ${BINDIR}" | qsub -V -cwd -o sge_job_log -e sge_job_log -N ${PREFIX}_probabel
 done
 wait
 

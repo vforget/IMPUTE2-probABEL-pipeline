@@ -4,14 +4,24 @@
 
 echoerr() { echo "$@" 1>&2; }
 
+# Where the genotype and sample info files are located
 GENDIR=$1
+# Suffix for genotype files
 GENO_SUFFIX="gen"
+#Suffix for sample files
 SAMP_SUFFIX="sample"
-BINDIR=~/share/vince.forgetta/0712-probabel-pipeline/bin
-INVSIGMA=invsigma.dat
+# Location of phenotype file
 PHENO=~/share/vince.forgetta/0712-probabel-pipeline/static/fabmd.txt
+# Location of kinship matrix
 KINSHIP_MAT=~/archive/t123TUK/imputed/HapMap/GenABEL/kinship-comb.RData
 FORMULA="fa_d_st"
+# Output name for polygenic matrix
+INVSIGMA=invsigma.dat
+
+# Where the binaries and scripts are located. Only change this if you move this directory.
+BINDIR=~/share/vince.forgetta/0712-probabel-pipeline/bin
+
+## !!!! MODIFY CODE BELOW WITH CARE !!!!
 
 echoerr "Pipeline started at " `date`
 

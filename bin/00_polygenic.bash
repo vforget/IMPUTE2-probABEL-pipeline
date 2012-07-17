@@ -1,5 +1,11 @@
 #!/bin/bash
 
+## Written by Vince Forgetta, vincenzo.forgetta@mail.mcgill.ca
+
+## Compute the polygenic matrix using R and GenABEL. 
+## As per ProbABEL requirements, must remove individuals with no
+## phenotype from polygenic matrix.
+
 KINSHIP_MAT=$1
 PHENO=$2
 INVSIGMA=$3

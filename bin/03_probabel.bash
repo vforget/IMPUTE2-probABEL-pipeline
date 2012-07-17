@@ -1,5 +1,9 @@
 #!/bin/bash
 
+## Written by Vince Forgetta, vincenzo.forgetta@mail.mcgill.ca
+
+## Runs ProbABEL as part of a larger pipeline.
+
 PREFIX=$1
 CHROM=$2
 INVSIGMA=$3

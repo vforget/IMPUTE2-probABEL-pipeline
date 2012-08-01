@@ -16,4 +16,5 @@ ${BINDIR}/palinear \
     --info ${PREFIX}.mlinfo \
     --mmscore ${INVSIGMA} \
     --chrom ${CHROM} \
+    --map ${PREFIX}.map \
     --out ${PREFIX}

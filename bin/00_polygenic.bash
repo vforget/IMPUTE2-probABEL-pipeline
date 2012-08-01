@@ -10,6 +10,7 @@ KINSHIP_MAT=$1
 PHENO=$2
 INVSIGMA=$3
 FORMULA=$4
+LOG_DIR=$5
 
 cat > polygenic.r << EOT
 # Generate a polygenic matrix given a kinship matrix and phenotype data
@@ -33,4 +34,4 @@ write.table(subset, file="${INVSIGMA}", row.names=T, col.names=F, quote=F)
 
 EOT
 
-R --no-save < polygenic.r &> polygenic.log
+R --no-save < polygenic.r &> ${LOG_DIR}/polygenic.log

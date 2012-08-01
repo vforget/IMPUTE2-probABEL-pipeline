@@ -6,8 +6,9 @@
 
 GENOFILE=$1   # Genotype file from SNPTEST or IMPUTE
 PREFIX=$2     # Prefix for file output
+PROBABEL_DIR=$3
 
-awk "BEGIN { print \"rs position 0 1\" } { print \$2, \$3, \$4, \$5 }" ${GENOFILE} > ${PREFIX}.map
+awk "BEGIN { print \"rs position 0 1\" } { print \$2, \$3, \$4, \$5 }" ${GENOFILE} > ${PROBABEL_DIR}/${PREFIX}.map
 
 
 

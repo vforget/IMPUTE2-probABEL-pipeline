@@ -4,15 +4,17 @@
 
 ## Merge data and produce graphs
 
+PROBABEL_DIR=$1
+PVALUE_CUTOFF="0.2"
+
 cat > graphs.r << EOT
 library(GenABEL)
 library(gap)
-files = list.files(pattern="*_add.out.txt")
-print(files[1])
-probabel_res = read.table(files[1], header=T, sep=" ")
+files = list.files(path="${PROBABEL_DIR}/", pattern="*_add.out.txt")
+fn = paste(c("${PROBABEL_DIR}", "/", files[1]), collapse="")
+probabel_res = read.table(fn, header=T, sep=" ")
 for(i in 2:length(files)) {
-    fn = files[i]
-    print (fn)
+    fn = paste(c("${PROBABEL_DIR}", "/", files[i]), collapse="")
     pr = read.table(fn, header=T, sep=" ")
     probabel_res = rbind(probabel_res, pr)
     
@@ -29,7 +31,7 @@ png(filename="mhtplot.png")
 mhtplot(data.frame(probabel_res\$chrom, probabel_res\$position, probabel_res\$pvalue), xlab="SNP Position", ylab="-log10(p-value)", mht.control(cex=3, labels=probabel_res\$chrom, col=seq(1:22)), pch=".")
 dev.off()
 
-top_snps = subset(probabel, pvalue < 5e-06)
+top_snps = subset(probabel_res, pvalue < ${PVALUE_CUTOFF})
 write.table(top_snps, file="top_snps.txt")
 
 EOT

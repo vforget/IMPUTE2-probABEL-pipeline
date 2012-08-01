@@ -8,10 +8,13 @@
 GENOFILE=$1 # Genotype file from SNPTEST or IMPUTE.
 SAMPFILE=$2 # Sample file from SNPTEST or IMPUTE.
 PREFIX=$3   # Filename prefix for output.
+DATABEL_DIR=$4
+LOG_DIR=$5
 
-cat > ${PREFIX}_impute2databel.r << EOT
+cat > ${DATABEL_DIR}/${PREFIX}_impute2databel.r << EOT
 library(GenABEL)
+setwd("${DATABEL_DIR}")
 impute2databel(genofile="${GENOFILE}", sample="${SAMPFILE}", makeprob=FALSE, outfile="${PREFIX}")
 EOT
 
-R --no-save < ${PREFIX}_impute2databel.r &> ${PREFIX}_impute2databel.log
+R --no-save < ${DATABEL_DIR}/${PREFIX}_impute2databel.r &> ${LOG_DIR}/${PREFIX}_impute2databel.log

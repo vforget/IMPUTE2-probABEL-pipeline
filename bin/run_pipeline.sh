@@ -63,13 +63,15 @@ do
     PREFIX=`basename ${GENOFILE} .${GENO_SUFFIX}`
     SAMPFILE="${GENDIR}/${PREFIX}.${SAMP_SUFFIX}"
     if $USE_SGE; then
-	echo "${BINDIR}/01_impute2databel.bash ${GENOFILE} ${SAMPFILE} ${PREFIX} ${DATABEL_DIR} ${LOG_DIR}" | qsub -V -cwd -o sge_job_log -e sge_job_log -N ${PREFIX}_databel -sync y &
+	# echo "${BINDIR}/01_impute2databel.bash ${GENOFILE} ${SAMPFILE} ${PREFIX} ${DATABEL_DIR} ${LOG_DIR}" | qsub -V -cwd -o sge_job_log -e sge_job_log -N ${PREFIX}_databel -sync y &
+	echo "${BINDIR}/01_impute2databel.bash ${GENOFILE} ${SAMPFILE} ${PREFIX} ${DATABEL_DIR} ${LOG_DIR}" | qsub -V -cwd -o sge_job_log -e sge_job_log -N ${PREFIX}_databel -q all.q
     else
 	${BINDIR}/01_impute2databel.bash ${GENOFILE} ${SAMPFILE} ${PREFIX} ${DATABEL_DIR} ${LOG_DIR}
     fi
 done
 wait
 echoerr "Genabel ended at " `date`
+exit;
 
 # STEP 3: PROBABEL
 echoerr "Probabel started at " `date`

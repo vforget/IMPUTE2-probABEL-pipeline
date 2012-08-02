@@ -26,7 +26,7 @@ write.table(probabel_res, file="probabel_res.txt", row.names=F, col.names=T, quo
 
 png("mhtplot.png", width=10, height=13, unit="in", res=200)
 colors <- rep(c("blue", "green"),11)
-mhtplot(data.frame(probabel_res\$chrom, probabel_res\$position, probabel_res\$pvalue), control=mht.control(usepos=TRUE, srt=0, colors=colors),pch=19)
+mhtplot(data.frame(probabel_res\$chrom, probabel_res\$position, probabel_res\$pvalue), control=mht.control(usepos=TRUE, colors=colors),pch=19)
 axis(2,at=seq(0, max(-log10(probabel_res\$pvalue), na.rm=TRUE)), labels=seq(0, max(-log10(probabel_res\$pvalue), na.rm=TRUE)))
 dev.off()
 

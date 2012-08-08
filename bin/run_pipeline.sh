@@ -12,6 +12,9 @@
 
 echoerr() { echo "$@" 1>&2; } # function to print to stderr
 
+# Use SGE
+USE_SGE=true
+
 #################
 ## IMPUTE DATA ##
 #################
@@ -35,10 +38,6 @@ KINSHIP_MAT=~/archive/t123TUK/imputed/HapMap/GenABEL/kinship-comb.RData
 FORMULA="fa_d_st"
 # Output name for polygenic matrix
 INVSIGMA=~/share/vince.forgetta/0712-probabel-pipeline/static/invsigma.dat
-# Use SGE
-USE_SGE=true
-# P-value cutoff fot top snps
-PVALUE_CUTOFF="5e-06"
 
 ########################
 ## OUTPUT DIRECTORIES ##
@@ -59,14 +58,16 @@ DO_POLYGENIC=false
 DO_DATABEL=true
 # Run probabel on databel data?
 DO_PROBABEL=true
+# P-value cutoff for probabel top snps
+PVALUE_CUTOFF="5e-06"
 # Generate output graphs and tables?
 DO_GRAPHS=true
-
 
 # Where the binaries and scripts are located. Only change this if you move this directory.
 BINDIR=~/share/vince.forgetta/0712-probabel-pipeline/bin
 
 ###########################################
+## !!!! MODIFY VARIABLES ABOVE ONLY !!!! ##
 ## !!!! MODIFY CODE BELOW WITH CARE !!!! ##
 ###########################################
 
@@ -108,11 +109,9 @@ if $DO_PROBABEL; then
 	SAMPFILE="${GENDIR}/${PREFIX}.${SAMP_SUFFIX}"
         # *** Parsing of chromosome name from genotype file ***
 	CHROM=`echo ${PREFIX} | perl -p -e "s/.*chr([0-9XY]+)\..*/\1/;"`
-	${BINDIR}/02_mlinfo.bash ${GENOFILE} ${PREFIX} ${PROBABEL_DIR}
-	${BINDIR}/03_map.bash ${GENOFILE} ${PREFIX} ${PROBABEL_DIR}
-	CMD="${BINDIR}/04_probabel.bash ${PREFIX} ${CHROM} ${INVSIGMA} ${PHENO} ${BINDIR} ${DATABEL_DIR} ${PROBABEL_DIR} ${LOG_DIR}"
+	CMD="${BINDIR}/04_probabel.bash ${PREFIX} ${CHROM} ${INVSIGMA} ${PHENO} ${BINDIR} ${DATABEL_DIR} ${PROBABEL_DIR} ${LOG_DIR} ${GENOFILE}"
 	if $USE_SGE; then
-	    echo  $CMD | qsub -V -cwd -o sge_job_log -e sge_job_log -N $PROBABEL_ID -hold_jid ${PREFIX}_databel -q all.q
+	    echo $CMD | qsub -V -cwd -o sge_job_log -e sge_job_log -N $PROBABEL_ID -hold_jid ${PREFIX}_databel -q 10.q
 	else
 	    $CMD
 	fi
@@ -121,7 +120,9 @@ fi
 
 # STEP 4: GRAPHS AND RESULTS
 if $DO_GRAPHS; then
-    echo "${BINDIR}/05_graphs.bash ${PROBABEL_DIR} ${PVALUE_CUTOFF}" | qsub -V -cwd -o sge_job_log -e sge_job_log -N "PrPipRes" -hold_jid $PROBABEL_ID -q all.q
+    MERGE_ID="m$RANDOM"
+    echo "${BINDIR}/05_merge.bash ${PROBABEL_DIR} ${LOG_DIR}" | qsub -V -cwd -o sge_job_log -e sge_job_log -N $MERGE_ID -hold_jid $PROBABEL_ID -q all.q
+    echo "${BINDIR}/05_graphs.bash ${PROBABEL_DIR} ${PVALUE_CUTOFF} ${LOG_DIR}" | qsub -V -cwd -o sge_job_log -e sge_job_log -N "PrPipRes" -hold_jid $PROBABEL_ID,$MERGE_ID -q all.q
 fi
 
 

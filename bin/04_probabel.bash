@@ -12,7 +12,10 @@ BINDIR=$5
 DATABEL_DIR=$6
 PROBABEL_DIR=$7
 LOG_DIR=$8
+GENOFILE=$9
 
+${BINDIR}/02_mlinfo.bash ${GENOFILE} ${PREFIX} ${PROBABEL_DIR}
+${BINDIR}/03_map.bash ${GENOFILE} ${PREFIX} ${PROBABEL_DIR}
 ${BINDIR}/palinear \
     --pheno ${PHENO} \
     --dose ${DATABEL_DIR}/${PREFIX}.dose.fvi \

@@ -1,25 +1,28 @@
 #!/bin/bash
 
-
 PROBABEL_DIR=$1
-LOG_DIR=$2
-PROBABEL_OUT_PREFIX="probabel_merge"
+INFO_SNP_FILE=$2
+LOG_DIR=$3
+PROBABEL_OUT_PREFIX=$4
+BINDIR=$5
 
 # MERGE PROBABEL RESULTS
-head -n 1 `ls ${PROBABEL_DIR}/*_add.out.txt | head -n 1` | cut -d ' ' -f 1,2,3,9,10,11,12,13 > ${PROBABEL_DIR}/${PROBABEL_OUT_PREFIX}.txt
-for f in `ls ${PROBABEL_DIR}/*_add.out.txt`
+for f in `ls ${PROBABEL_DIR}/*_add.out.txt.pvalue`
 do
-    tail -n +2 $f | cut -d ' ' -f 1,2,3,9,10,11,12,13 >> ${PROBABEL_DIR}/${PROBABEL_OUT_PREFIX}.txt
+    tail -n +2 $f | cut -d ' ' -f 1,2,3,9,10,11,12,13,14 | sort -k5n,5 -k6n,6  > ${f}.sort
 done
 
-cat > merge.r << EOT
-fn = paste(c("${PROBABEL_DIR}", "/", "${PROBABEL_OUT_PREFIX}.txt"), collapse="")
-probabel_res = read.table(fn, header=T, sep=" ")
-pvalue = pchisq((probabel_res\$beta_SNP_add/probabel_res\$sebeta_SNP_add)^2, df=1, lower=F)
-probabel_res = cbind(probabel_res, pvalue)
-probabel_res = probabel_res[with(probabel_res, order(probabel_res\$chrom, probabel_res\$position)), ]
-write.table(probabel_res, file="probabel_res.txt", row.names=F, col.names=T, quote=F)
-save(probabel_res, file="${PROBABEL_DIR}/${PROBABEL_OUT_PREFIX}.RData")
+# Sort output by chrom and pos
+sort -m -k5n,5 -k6n,6 ${PROBABEL_DIR}/*_add.out.txt.pvalue.sort > ${PROBABEL_DIR}/${PROBABEL_OUT_PREFIX}.sort.txt
+
+join -t " " -j 1 ${PROBABEL_DIR}/${PROBABEL_OUT_PREFIX}.sort.txt ${INFO_SNP_FILE} | cut -f 1-9 -d " " >  ${PROBABEL_DIR}/${PROBABEL_OUT_PREFIX}.filtered.tmp
+
+head -n 1 `ls ${PROBABEL_DIR}/*_add.out.txt.pvalue | head -n 1` | cut -d ' ' -f 1,2,3,9,10,11,12,13,14 > ${PROBABEL_DIR}/${PROBABEL_OUT_PREFIX}.filtered
+awk '{ if ((($4 != "NA") && ($7 != "NA") && ($8 != "NA")) && ($4 >= 0.01) && ($4 <= 0.99) && ($7 >= -1.5) && ($7 <= 1.5) && ($8 >= 0.01)) print $0 }' ${PROBABEL_DIR}/${PROBABEL_OUT_PREFIX}.filtered.tmp >> ${PROBABEL_DIR}/${PROBABEL_OUT_PREFIX}.filtered
+
+cat > ${PROBABEL_DIR}/save_${PROBABEL_OUT_PREFIX}.r << EOT
+probabel_res = read.table("${PROBABEL_DIR}/${PROBABEL_OUT_PREFIX}.filtered", header=T, sep=" ")
+save(probabel_res, file="probabel/${PROBABEL_OUT_PREFIX}.RData")
 EOT
 
-R --no-save < merge.r &> ${LOG_DIR}/${PROBABEL_OUT_PREFIX}.log
+R --no-save < ${PROBABEL_DIR}/save_${PROBABEL_OUT_PREFIX}.r &> ${LOG_DIR}/save_${PROBABEL_OUT_PREFIX}.log

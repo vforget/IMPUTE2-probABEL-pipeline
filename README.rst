@@ -21,6 +21,10 @@ Optional as long as the required file for ProbABEL is present i.e., a polygenic 
 
 To enable or diable this step toggle the DO_POLYGENIC variable.
 
+Also in this step, SNPs are filtered based on informativity.  This should only need to be computed once, unless the informativity information for each SNP happends to change. Currently, the informavivity information is based on tuk317k and tuk610kplus data.
+
+To enable or diable this step toggle the DO_FILTERINFO variable.
+
 STEP 2
 ~~~~~~
 Script: 01_impute2databel.bash

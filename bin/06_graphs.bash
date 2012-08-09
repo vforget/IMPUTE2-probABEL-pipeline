@@ -5,7 +5,7 @@
 PROBABEL_DIR=$1
 PVALUE_CUTOFF=$2
 LOG_DIR=$3
-PROBABEL_OUT_PREFIX="probabel_merge"
+PROBABEL_OUT_PREFIX=$4
 
 cat > graphs.r << EOT
 library(GenABEL)

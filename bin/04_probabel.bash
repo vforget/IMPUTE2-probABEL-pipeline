@@ -14,10 +14,12 @@ PROBABEL_DIR=$7
 LOG_DIR=$8
 GENOFILE=$9
 
+# Generate MLINFO file
 ${BINDIR}/02_mlinfo.bash ${GENOFILE} ${PREFIX} ${PROBABEL_DIR}
-
+# Generate MAP file
 ${BINDIR}/03_map.bash ${GENOFILE} ${PREFIX} ${PROBABEL_DIR}
 
+# Run ProbABEL
 ${BINDIR}/palinear \
     --pheno ${PHENO} \
     --dose ${DATABEL_DIR}/${PREFIX}.dose.fvi \
@@ -27,6 +29,7 @@ ${BINDIR}/palinear \
     --map ${PROBABEL_DIR}/${PREFIX}.map \
     --out ${PROBABEL_DIR}/${PREFIX} &> ${LOG_DIR}/${PREFIX}_probabel.log
 
+# Compute p-values from beta and se_beta
 cat > ${PROBABEL_DIR}/pvalue_${PREFIX}.r << EOT
 probabel_res = read.table("${PROBABEL_DIR}/${PREFIX}_add.out.txt", header=T, sep=" ")
 pvalue = pchisq((probabel_res\$beta_SNP_add/probabel_res\$sebeta_SNP_add)^2, df=1, lower=F)

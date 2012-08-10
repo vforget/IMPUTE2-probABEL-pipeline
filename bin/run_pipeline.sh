@@ -4,12 +4,12 @@
 
 ## This pipeline runs ProbABEL analysis using imputed genotypes from SNPTEST or IMPUTE.
 ## IMPORTANT: 
-##           1. Chromosome number is parsed from the genotype file name e.g. chr7.gen parses to "7".
-##           2. By default, it is assumed the polygenic matrix exists (see INVSIGMA variable). To create one, set 
-##              DO_POLYGENIC=true, changing the appropriate variable below in the PHENOTYPE DATA section.
-##           3. By default, genotype files end in .gen and sample files in .sample.
-##           4. By default, SGE is used. To disable it, set USE_SGE=false.
-##           5. By default, SNPs with info >=0.4 are retained as computed from the tuk317K and tuk610Kplus data sets. To change this see the SNP INFORMATIVITY section.
+##           + Chromosome number is parsed from the genotype file name e.g. chr7.gen parses to "7".
+##           + By default, it is assumed the polygenic matrix exists (see INVSIGMA variable). To create one, set DO_POLYGENIC=true, and change the appropriate variable below in the PHENOTYPE DATA section.
+##           + By default, SNPs with info >=0.4 are retained as computed from the tuk317K and tuk610Kplus data sets. To change this see the SNP INFORMATIVITY section.
+##           + By default, genotype files end in .gen and sample files in .sample. To change this see GENOTYPE DATA section.
+##           + By default, SGE is used. To disable it, set USE_SGE=false.
+##           + SGE is NOT used for filtering SNPs for informativity or computing the polygenic matrix.
 
 echoerr() { echo "$@" 1>&2; } # function to print to stderr
 
@@ -42,18 +42,17 @@ FORMULA="fa_d_st"
 # Output name for polygenic matrix
 INVSIGMA=~/share/vince.forgetta/0712-probabel-pipeline/static/invsigma.dat
 
-#####################
-# SNP INFORMATIVITY #
-#####################
+#######################
+## SNP INFORMATIVITY ##
+#######################
 
 # Filter SNPs for informativity? Should only be re-run if source informativity values change (see this steps code below for paths to these source files)
 DO_FILTERINFO=false
-INFO_FILE_317k=~/archive/t123TUK/imputed/1kGenomes.Phase1/info/info_posterior_tuk317K.b37ph/tuk317K.b37ph.chr1-22.ALL_1000G_phase1interim_jun2011_.posterior_sampled_haps_imputation.impute2_info
-INFO_FILE_610kplus=~/archive/t123TUK/imputed/1kGenomes.Phase1/info/info_posterior_tuk610Kplus.b37ph/tuk610Kplus.b37ph.chr1-22.ALL_1000G_phase1interim_jun2011_.posterior_sampled_haps_imputation.impute2_info
+INFO_FILES=`ls ~/archive/t123TUK/imputed/1kGenomes.Phase1/info/info_posterior_tuk*.b37ph/*.b37ph.chr1-22.ALL_1000G_phase1interim_jun2011_.posterior_sampled_haps_imputation.impute2_info`
 # Min. allele freq to include SNP from informativity files
 INFO_MIN_FREQ=0.4
 # Where informative SNPs are stored
-INFO_SNP_FILE=~/share/vince.forgetta/0712-probabel-pipeline/static/tuk.INFOgteq0.4.BOTH.txt.sort
+INFO_SNP_FILE=~/share/vince.forgetta/0712-probabel-pipeline/static/tuk.info_${INFO_MIN_FREQ}
 
 ########################
 ## OUTPUT DIRECTORIES ##
@@ -63,6 +62,7 @@ INFO_SNP_FILE=~/share/vince.forgetta/0712-probabel-pipeline/static/tuk.INFOgteq0
 DATABEL_DIR=databel
 PROBABEL_DIR=probabel
 LOG_DIR=log
+TMPDIR=tmp
 
 ####################
 ## PIPELINE STEPS ##
@@ -86,20 +86,19 @@ BINDIR=~/share/vince.forgetta/0712-probabel-pipeline/bin
 ## !!!! MODIFY CODE BELOW WITH CARE !!!! ##
 ###########################################
 
-mkdir -p ${DATABEL_DIR}  
-mkdir -p ${PROBABEL_DIR} 
-mkdir -p ${LOG_DIR} 
+mkdir -p ${DATABEL_DIR}
+mkdir -p ${PROBABEL_DIR}
+mkdir -p ${LOG_DIR}
+mkdir -p ${TMPDIR}
 mkdir -p sge_job_log
 
 
-# STEP1: FILTER SNPs FOR INFORMATIVITY AND COMPUTE POLYGENIC MATRIX
+## STEP1: FILTER SNPs FOR INFORMATIVITY AND COMPUTE POLYGENIC MATRIX
 
 if $DO_FILTERINFO; then
-    # Files with informativity information for SNPs
-    tail -n +2 $INFO_FILE_317k | awk "{ if (\$5 >= b${INFO_MIN_FREQ}){ if (\$1 ~ /\-\-\-/){ split(\$2, a, \"-\"); print \$2, a[1], \$3 }else{ print \$2, \$1, \$3 }}}" > tuk317K.INFOgteq0.4.txt
-    tail -n +2 $INFO_FILE_610kplus | awk "{ if (\$5 >= ${INFO_MIN_FREQ}){ if (\$1 ~ /\-\-\-/){ split(\$2, a, \"-\"); print \$2, a[1], \$3 }else{ print \$2, \$1, \$3 }}}" > tuk610Kplus.INFOgteq0.4.txt
-    tail -q -n +2 $INFO_FILE_317k $INFO_FILE_610kplus | awk "{ if (\$5 >= ${INFO_MIN_FREQ}){ if (\$1 ~ /\-\-\-/){ split(\$2, a, \"-\"); print \$2, a[1], \$3 }else{ print \$2, \$1, \$3 }}}" | sort -k2n,3n | uniq > tmp.info
-    comm -1 -2 tuk317K.INFOgteq0.4.txt tuk610Kplus.INFOgteq0.4.txt | sort -k2n,3n > ${INFO_SNP_FILE}
+    echoerr "SNP Filtering started at" `date`
+    tail -q -n +2 $INFO_FILES | awk "{ if (\$5 >= ${INFO_MIN_FREQ}){ if (\$1 ~ /\-\-\-/){ split(\$2, a, \"-\"); print \$2, a[1], \$3 }else{ print \$2, \$1, \$3 }}}" | sort -k2n,3n -T ${TMPDIR} | uniq -d > ${INFO_SNP_FILE}
+    echoerr "SNP Filtering ended at" `date`
 fi
 
 if $DO_POLYGENIC; then
@@ -108,7 +107,8 @@ if $DO_POLYGENIC; then
     echoerr "Polygenic ended at " `date`
 fi
 
-# STEP2: IMPUTE TO DATABEL CONVERSION
+## STEP2: IMPUTE TO DATABEL CONVERSION
+
 if $DO_DATABEL; then
     for GENOFILE in `ls ${GENDIR}/*.${GENO_SUFFIX}`
     do
@@ -123,16 +123,16 @@ if $DO_DATABEL; then
     done
 fi
 
-# STEP 3: PROBABEL
+## STEP 3: PROBABEL
+
 if $DO_PROBABEL; then
     PROBABEL_ID="p$RANDOM"
-    
     for GENOFILE in `ls ${GENDIR}/*.${GENO_SUFFIX}`
     do
 	mkdir -p sge_job_log
 	PREFIX=`basename ${GENOFILE} .${GENO_SUFFIX}`
 	SAMPFILE="${GENDIR}/${PREFIX}.${SAMP_SUFFIX}"
-        # *** Parsing of chromosome name from genotype file ***
+        # !!! Parsing of chromosome name from genotype file !!!
 	CHROM=`echo ${PREFIX} | perl -p -e "s/.*chr([0-9XY]+).*/\1/;"`
 	CMD="${BINDIR}/04_probabel.bash ${PREFIX} ${CHROM} ${INVSIGMA} ${PHENO} ${BINDIR} ${DATABEL_DIR} ${PROBABEL_DIR} ${LOG_DIR} ${GENOFILE}"
 	if $USE_SGE; then
@@ -140,13 +140,19 @@ if $DO_PROBABEL; then
 	else
 	    $CMD
 	fi
-    done    
+    done  
 fi
 
-# STEP 4: GRAPHS AND RESULTS
+## STEP 4: GRAPHS AND RESULTS
+
 if $DO_GRAPHS; then
     MERGE_ID="m$RANDOM"
     PROBABEL_PREFIX="probabel"
-    echo "${BINDIR}/05_merge.bash ${PROBABEL_DIR} ${INFO_SNP_FILE} ${LOG_DIR} ${PROBABEL_PREFIX} ${BINDIR}" | qsub -V -cwd -o sge_job_log -e sge_job_log -N $MERGE_ID -hold_jid $PROBABEL_ID -q all.q
-    echo "${BINDIR}/06_graphs.bash ${PROBABEL_DIR} ${PVALUE_CUTOFF} ${LOG_DIR} ${PROBABEL_PREFIX}" | qsub -V -cwd -o sge_job_log -e sge_job_log -N "PrPipRes" -hold_jid $PROBABEL_ID,$MERGE_ID -q all.q
+    if $USE_SGE; then
+	echo "${BINDIR}/05_merge.bash ${PROBABEL_DIR} ${INFO_SNP_FILE} ${LOG_DIR} ${PROBABEL_PREFIX} ${BINDIR}" | qsub -V -cwd -o sge_job_log -e sge_job_log -N $MERGE_ID -hold_jid $PROBABEL_ID -q all.q
+	echo "${BINDIR}/06_graphs.bash ${PROBABEL_DIR} ${PVALUE_CUTOFF} ${LOG_DIR} ${PROBABEL_PREFIX}" | qsub -V -cwd -o sge_job_log -e sge_job_log -N "PrPipRes" -hold_jid $PROBABEL_ID,$MERGE_ID -q all.q
+    else
+	${BINDIR}/05_merge.bash ${PROBABEL_DIR} ${INFO_SNP_FILE} ${LOG_DIR} ${PROBABEL_PREFIX} ${BINDIR}
+	${BINDIR}/06_graphs.bash ${PROBABEL_DIR} ${PVALUE_CUTOFF} ${LOG_DIR} ${PROBABEL_PREFIX}
+    fi
 fi

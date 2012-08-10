@@ -5,11 +5,11 @@
 ## This script requries that the R statistical package is installed with the GenABEL library.
 
 
-GENOFILE=$1 # Genotype file from SNPTEST or IMPUTE.
-SAMPFILE=$2 # Sample file from SNPTEST or IMPUTE.
-PREFIX=$3   # Filename prefix for output.
-DATABEL_DIR=$4
-LOG_DIR=$5
+GENOFILE=$1    # Genotype file from SNPTEST or IMPUTE.
+SAMPFILE=$2    # Sample file from SNPTEST or IMPUTE.
+PREFIX=$3      # Filename prefix for output.
+DATABEL_DIR=$4 # where to store results
+LOG_DIR=$5 
 
 cat > ${DATABEL_DIR}/${PREFIX}_impute2databel.r << EOT
 library(GenABEL)

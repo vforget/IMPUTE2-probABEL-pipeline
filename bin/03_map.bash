@@ -2,7 +2,7 @@
 
 ## Written by: Vince Forgetta, vincenzo.forgetta@mail.mcgill.ca.
 
-## Generate a MLINFO file for PROBABEL from genotype file from SNPTEST or IMPUTE.
+## Generate a MAP file for PROBABEL from genotype file from SNPTEST or IMPUTE.
 
 GENOFILE=$1   # Genotype file from SNPTEST or IMPUTE
 PREFIX=$2     # Prefix for file output

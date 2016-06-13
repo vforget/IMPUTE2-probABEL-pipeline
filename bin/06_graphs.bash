@@ -8,6 +8,7 @@ PROBABEL_DIR=$1
 PVALUE_CUTOFF=$2
 LOG_DIR=$3
 PROBABEL_OUT_PREFIX=$4
+BINDIR=$5
 
 cat > graphs.r << EOT
 library(GenABEL)
@@ -20,11 +21,16 @@ qqunif(probabel_res\$pvalue, pch=21, cex=.51, bg="black", bty="n", col="1", main
 dev.off()
 
 # MHTPLOT
+source("${BINDIR}/manhattan.r")
 png("mhtplot.png", width=10, height=13, unit="in", res=200)
-colors <- rep(c("blue", "green"),11)
-mhtplot(data.frame(probabel_res\$chrom, probabel_res\$position, probabel_res\$pvalue), control=mht.control(usepos=TRUE, colors=colors),pch=19)
+e=data.frame(SNP=probabel_res\$name, CHR=probabel_res\$chrom, BP=probabel_res\$position, P=probabel_res\$pvalue)
+manhattan(e)
+
+# colors <- rep(c("blue", "green"),11)
+# mhtplot(data.frame(probabel_res\$chrom, probabel_res\$position, probabel_res\$pvalue), control=mht.control(usepos=TRUE, colors=colors),pch=19)
 # Axis fails for very large datasets. This needs to be fixed.
-#axis(2,at=seq(0, max(-log10(probabel_res\$pvalue), na.rm=TRUE)), labels=seq(0, max(-log10(probabel_res\$pvalue), na.rm=TRUE)))
+# axis(2,at=seq(0, max(-log10(probabel_res\$pvalue), na.rm=TRUE)), labels=seq(0, max(-log10(probabel_res\$pvalue), na.rm=TRUE)))
+
 dev.off()
 
 # BOXPLOT

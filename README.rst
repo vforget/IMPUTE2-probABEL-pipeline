@@ -21,7 +21,7 @@ Optional as long as the required file for ProbABEL is present i.e., a polygenic 
 
 To enable or diable this step toggle the DO_POLYGENIC variable.
 
-Also in this step, SNPs are filtered based on informativity.  This should only need to be computed once, unless the informativity information for each SNP happends to change. Currently, the informavivity information is based on tuk317k and tuk610kplus data.
+Also in this step, SNPs are filtered based on informativity.  This should only need to be computed once, unless the informativity information for each SNP happends to change. 
 
 To enable or diable this step toggle the DO_FILTERINFO variable.
 
@@ -52,13 +52,6 @@ Script: 05_graphs.bash
 This step merges results across all chunks (or chromosomes) from Step 3, ultimately generating a Manhattan plot, a QQ plot, and a top snps table, amoung other results.
 
 NOTE: With SGE, this step is on hold until the entirety of STEP 3 is complete.
-
-EXAMPLE
--------
-
-::
-
-bash ~/share/vince.forgetta/0712-probabel-pipeline/bin/run_pipeline.sh ~/archive/t123TUK/imputed/1kGenomes.Phase1/gen.sample/chunks/
 
 REQUIREMENTS
 ------------

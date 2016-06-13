@@ -39,3 +39,5 @@ write.table(probabel_res, file="${PROBABEL_DIR}/${PREFIX}_add.out.txt.pvalue", r
 EOT
 
 R --no-save < ${PROBABEL_DIR}/pvalue_${PREFIX}.r &> ${LOG_DIR}/pvalue_${PREFIX}.log
+
+tail -n +2 ${PROBABEL_DIR}/${PREFIX}_add.out.txt.pvalue | cut -d ' ' -f 1,2,3,9,10,11,12,13,14 | sort -k1,1 > ${PROBABEL_DIR}/${PREFIX}_add.out.txt.pvalue.sort

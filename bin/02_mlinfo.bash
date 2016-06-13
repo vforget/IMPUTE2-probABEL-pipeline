@@ -10,4 +10,3 @@ A_FREQ=0.5847   # Dummy allele freq, not used by probabel. Only migrated to outp
 PROBABEL_DIR=$3
 
 awk "BEGIN { print \"SNP Al1 Al2 Freq1 MAF Quality Rsq\" } { print \$2, \$4, \$5, ${A_FREQ}, ${A_FREQ}, ${A_FREQ}, ${A_FREQ} }" ${GENOFILE} > ${PROBABEL_DIR}/${PREFIX}.mlinfo
-
